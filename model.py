@@ -60,6 +60,7 @@ class Participant(BaseModel):
   summonerName: str
   teamId: int
   win: bool
+  championName: str
 
 class Info(BaseModel):
   gameDuration: int
@@ -72,3 +73,16 @@ class Info(BaseModel):
 class Match(BaseModel):
   metadata: Metadata
   info: Info
+
+class ChampionTag(_AutoName):
+  Fighter = auto()
+  Mage = auto()
+  Marksman = auto()
+  Assassin = auto()
+  Tank = auto()
+  Support = auto()
+
+class Champion(BaseModel):
+  id: str 
+  name: str 
+  tags: list[ChampionTag]

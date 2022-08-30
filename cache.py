@@ -1,40 +1,54 @@
 import json
 import os
-
+import pickledb
 import urllib.parse
 
-NAME = 'lol'
+NAME = 'data'
 ENABLE = True
+EXCLUDE_PARAM_KEYS = ['api_key']
 
-cache = {}
-if os.path.isfile(f'{NAME}.cache'):
-    with open(f'{NAME}.cache') as f:
-        cache = json.load(f)
+cache:pickledb.PickleDB = None
+changed = False 
+
+def _name():
+  return f'{NAME}.cache'
         
 def _get_key(url: str, params: dict):
-    if params and len(params.keys()) > 0: 
-        param_str = '&'.join([f'{k}={urllib.parse.quote(str(v))}' for k, v in params.items() if k != 'api_key'])
-        return f"{url}?{param_str}"
-    return url
+  params = params.copy()
+  for k in EXCLUDE_PARAM_KEYS:
+    if k in params:
+      del params[k]
+  if params and len(params.keys()) > 0: 
+    param_str = '&'.join([f'{k}={urllib.parse.quote(str(v))}' for k, v in params.items() if k not in EXCLUDE_PARAM_KEYS])
+    return f"{url}?{param_str}"
+  return url
+
+def load():
+  global cache
+  cache = pickledb.load(_name(), auto_dump=True)
 
 def get(url: str, params: dict):
-    key = _get_key(url, params)
-    return cache[key]
+  key = _get_key(url, params)
+  return json.loads(cache.get(key))
 
 def exists(url: str, params: dict):
-    key = _get_key(url, params)
-    return key in cache
+  key = _get_key(url, params)
+  return cache.get(key) is not False
 
 def update(url: str, params: dict, data, remove=False):
-    key = _get_key(url, params)
+  global changed
+  key = _get_key(url, params)
 
-    if remove and key in cache:
-        del cache[key]
-    if not remove:
-        cache[key] = data 
+  if remove and cache.get(key) is not None:
+    cache.rem(key)
+  if not remove:
+    cache.set(key, json.dumps(data))
+  changed = True
 
 def save():
-    if not ENABLE: 
-        return
-    with open(f'{NAME}.cache', 'w') as f:
-        json.dump(cache, f, indent=4)
+  # cache.auto_dump
+  return 
+  # if not ENABLE or not changed: 
+  #   return
+  # with open(f'{NAME}.cache', 'w') as f:
+  #   json.dump(cache, f, indent=4)
