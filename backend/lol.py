@@ -1,10 +1,13 @@
+import logging
 import os
-from string import Template 
+from string import Template
+from typing import Any 
 import requests
 import cache
 import model
 from datetime import date, datetime
 import time
+from db import db
 
 RATE_LIMIT = 20 # requests allowed per second
 API_KEY = os.getenv('RIOT_API_KEY')
@@ -15,8 +18,10 @@ def _call(url: str, params: dict = {}, method = 'get', region = 'americas', noCa
   global last_call
   if not 'api_key' in params or not params['api_key']:
     params['api_key'] = API_KEY
+
   if not noCache and cache.exists(url, params):
     return cache.get(url, params)
+
   # rate limiting: avoid making queries too fast
   now = datetime.now()
   if last_call is not None:
@@ -65,16 +70,31 @@ def _get(url: str, params: dict = {}):
     return _get(url, params)
   raise Exception(r.status_code, r.text, r.headers)
 
+def _db_call(collection: str, query: Any, *args, **kwargs):
+  doc = db[collection].find_one(query)
+  if not doc:
+    doc = _call(*args, **kwargs)
+    db[collection].insert_one(doc)
+    cache.save()
+  return doc
+
 # routes
 
 def summoner(username: str):
-  print(f'GET summoner {username}')
-  summoner = model.Summoner(**_call(f'lol/summoner/v4/summoners/by-name/{username}', region='na1'))
-  cache.save()
+  logging.info(f'GET summoner {username}')
+
+  # doc = db.summoners.find_one({ 'name': username })
+  # if not doc:
+  #   doc = _call(f'lol/summoner/v4/summoners/by-name/{username}', region='na1')
+  #   db.summoners.insert_one(doc)
+  #   cache.save()
+
+  summoner = model.Summoner(**_db_call('summoners', {'name':username}, f'lol/summoner/v4/summoners/by-name/{username}', region='na1'))
+  
   return summoner
 
 def arams(puuid: model.puuid, max = 300):
-  print('GET arams ', end='')
+  logging.info('GET arams')
   # get ids
   ids: list[str] = []
   ret: list[str] = None
@@ -84,13 +104,11 @@ def arams(puuid: model.puuid, max = 300):
       'start': len(ids),
       'count': 100
     }, noCache=True) or []
-    print('|', end='', flush=True)
     ids.extend(ret)
   ids = ids[:max]
-  print(f'({len(ids)})')
+  logging.info(f'retrieve {len(ids)} matches')
   # turn ids into match data
-  matches = [print('.', end='', flush=True) or model.Match(**_call(f'lol/match/v5/matches/{id}')) for id in ids]
-  print()  
+  matches = [model.Match(**_db_call('matches', {'metadata':{'match_id': id}}, f'lol/match/v5/matches/{id}')) for id in ids]
   cache.save()
   return [match for match in matches if match.info.gameMode == model.GameMode.ARAM][:max]
 

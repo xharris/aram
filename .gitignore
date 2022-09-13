@@ -1,4 +1,9 @@
+# python api
+
 .env
 env
 __pycache__
 lol.cache
+
+# web
+node_modules
