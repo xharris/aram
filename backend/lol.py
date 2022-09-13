@@ -10,7 +10,7 @@ from datetime import date, datetime
 import time
 from db import db
 
-RATE_LIMIT = 20 # requests allowed per second
+RATE_LIMIT = 100 / 2 / 60 # 20 # requests allowed per second
 API_KEY = os.getenv('RIOT_API_KEY')
 BASE_URL = 'https://$region.api.riotgames.com'
 

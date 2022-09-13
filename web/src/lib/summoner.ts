@@ -5,7 +5,7 @@ import debugModule from 'debug'
 const debug = debugModule('app:summoner')
 
 export const useSummoner = ({ name }: { name?: string }) => {
-  const query = useQuery<any, Error>(
+  const query = useQuery<Aram.Riot.Summoner, Error>(
     ['summoner', { name }],
     () =>
       api
