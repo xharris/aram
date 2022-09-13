@@ -4,6 +4,7 @@
 env
 __pycache__
 lol.cache
+*.log
 
 # web
 node_modules
