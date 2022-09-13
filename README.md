@@ -5,6 +5,9 @@
 ```
 python -m venv env
 pip install -r requirements.txt
+
+cd web
+yarn install
 ```
 
 Create an .env file
@@ -14,6 +17,22 @@ RIOT_API_KEY=<your-api-key>
 ```
 
 `py main.py`
+
+## start dev
+
+terminal 1
+
+```
+env/Scripts/activate
+py backend/main.py
+```
+
+terminal 2
+
+```
+cd web
+yarn dev
+```
 
 ## notes
 

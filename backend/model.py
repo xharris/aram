@@ -1,10 +1,11 @@
-from enum import Enum, IntEnum, auto
-from typing import Literal, Union
+from enum import Enum, auto
 from pydantic import BaseModel
 
 class _AutoName(Enum):
   def _generate_next_value_(name, _start, _count, _lastval):
     return name
+
+# RIOT API
 
 puuid = str
 
@@ -43,6 +44,7 @@ class GameMode(_AutoName):
   ODYSSEY = auto() 
   NEXUSBLITZ = auto() 
   ULTBOOK = auto()
+  PRACTICETOOL = auto()
 
 class GameType(_AutoName):
   CUSTOM_GAME = auto()
@@ -85,4 +87,25 @@ class ChampionTag(_AutoName):
 class Champion(BaseModel):
   id: str 
   name: str 
+  tags: list[ChampionTag]
+
+# ARAM
+
+class MatchResult(BaseModel):
+  total: int = 0
+  win: int = 0
+  lose: int = 0
+
+class PlayerStats(BaseModel):
+  puuid: str
+  summonerName: str
+  playedWith: MatchResult = MatchResult()
+  playedAgainst: MatchResult = MatchResult()
+
+class ChampionStats(BaseModel):
+  id: str
+  name: str
+  playedAs: MatchResult = MatchResult()
+  playedWith: MatchResult = MatchResult()
+  playedAgainst: MatchResult = MatchResult()
   tags: list[ChampionTag]

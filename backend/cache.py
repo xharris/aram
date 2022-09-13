@@ -1,5 +1,4 @@
 import json
-import os
 import pickledb
 import urllib.parse
 
@@ -24,18 +23,23 @@ def _get_key(url: str, params: dict):
   return url
 
 def load():
+  if not ENABLE: return None
   global cache
-  cache = pickledb.load(_name(), auto_dump=True)
+  if not cache:
+    cache = pickledb.load(_name(), auto_dump=True)
 
 def get(url: str, params: dict):
+  if not ENABLE: return None
   key = _get_key(url, params)
   return json.loads(cache.get(key))
 
 def exists(url: str, params: dict):
+  if not ENABLE: return False
   key = _get_key(url, params)
   return cache.get(key) is not False
 
 def update(url: str, params: dict, data, remove=False):
+  if not ENABLE: return None
   global changed
   key = _get_key(url, params)
 

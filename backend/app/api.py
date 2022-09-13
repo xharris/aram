@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from . import summoner, champions
 
 app = FastAPI()
 origins = [
@@ -15,10 +16,8 @@ app.add_middleware(
 )
 
 @app.get('/', tags=['root'])
-def read_root():
+def read_root(request: Request):
   return {'message': 'welcome to hell'}
 
-import lol
-@app.get('/summoner/{summoner}')
-def read_summoner(summoner: str):
-  return lol.summoner(summoner)
+app.include_router(summoner.router, prefix='/api/v1')
+app.include_router(champions.router, prefix='/api/v1')

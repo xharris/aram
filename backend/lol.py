@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import logging
 import os
 from string import Template
@@ -53,7 +54,8 @@ def _call(url: str, params: dict = {}, method = 'get', region = 'americas', noCa
     time.sleep(wait)
     return _call(url, params, method, region, noCache)
 
-  raise Exception(r.text, r.headers)
+  # raise Exception(r.status_code, r.json(), r.headers)
+  raise HTTPException(status_code=r.status_code, detail=r.json()['status']['message'])
 
 def _get(url: str, params: dict = {}):
   if cache.exists(url, params):
@@ -72,7 +74,9 @@ def _get(url: str, params: dict = {}):
 
 def _db_call(collection: str, query: Any, *args, **kwargs):
   doc = db[collection].find_one(query)
+  logging.info(' '.join(args), query)
   if not doc:
+    logging.info('not in db')
     doc = _call(*args, **kwargs)
     db[collection].insert_one(doc)
     cache.save()
@@ -108,7 +112,7 @@ def arams(puuid: model.puuid, max = 300):
   ids = ids[:max]
   logging.info(f'retrieve {len(ids)} matches')
   # turn ids into match data
-  matches = [model.Match(**_db_call('matches', {'metadata':{'match_id': id}}, f'lol/match/v5/matches/{id}')) for id in ids]
+  matches = [model.Match(**_db_call('matches', {'metadata.matchId': id}, f'lol/match/v5/matches/{id}')) for id in ids]
   cache.save()
   return [match for match in matches if match.info.gameMode == model.GameMode.ARAM][:max]
 

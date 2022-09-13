@@ -5,40 +5,28 @@ from dotenv import load_dotenv
 load_dotenv()
 import logging
 logging.basicConfig(filename='out.log', encoding='utf-8', level=logging.INFO)
+logging.getLogger('watchfiles').setLevel(logging.ERROR)
+
+import cache
+
+cache.NAME = 'lol'
+cache.ENABLE = False
+# cache.load()
 
 PORT=os.getenv('PORT')
 
 if __name__ == '__main__':
-  uvicorn.run('app.api:app', host='0.0.0.0', port=int(PORT), reload=True)
+  uvicorn.run(
+    'app.api:app', host='0.0.0.0', port=int(PORT), 
+    reload=True,
+  )
+
+
+# import lol
 
 # from re import T
 # from pydantic import BaseModel
 # from model import Champion, ChampionTag
-
-# import lol
-import cache
-
-cache.NAME = 'lol'
-cache.ENABLE = True
-
-# class MatchResult(BaseModel):
-#   total: int = 0
-#   win: int = 0
-#   lose: int = 0
-
-# class PlayerStats(BaseModel):
-#   puuid: str
-#   summonerName: str
-#   playedWith: MatchResult = MatchResult()
-#   playedAgainst: MatchResult = MatchResult()
-
-# class ChampionStats(BaseModel):
-#   id: str
-#   name: str
-#   playedAs: MatchResult = MatchResult()
-#   playedWith: MatchResult = MatchResult()
-#   playedAgainst: MatchResult = MatchResult()
-#   tags: list[ChampionTag]
 
 # def findPlayer(players: list[PlayerStats], summonerName: str):
 #   return next(player for player in players if player.summonerName == summonerName)
