@@ -10,12 +10,12 @@ export interface UseStatProps {
 }
 
 export const useStat = <T = any>({ key, url }: UseStatProps) => {
-  const query = useQuery<T[] | undefined, Error>(
+  const query = useQuery<T | undefined, Error>(
     key,
     () => {
       if (url) {
         debug('start stat %o %o', key, url)
-        return api.get<T[]>(url).then((res) => {
+        return api.get<T>(url).then((res) => {
           debug('done stat %o %o', key, res.data)
           return res.data
         })

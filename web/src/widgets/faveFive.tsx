@@ -1,21 +1,21 @@
 import { Image } from '../component/Image'
-import { Widget } from '../component/Widget'
+import { TableWidget } from '../component/TableWidget'
 import { championSquare } from '../lib/ddragon'
 import { style } from '../lib/style'
 
-interface WidgetData {
+interface TableWidgetData {
   _id: number
   championName: string
   count: number
 }
 
 interface FaveFiveProps {
-  summoner: Aram.Riot.Summoner
+  summoner?: Aram.Riot.Summoner
 }
 
 export const FaveFive = ({ summoner }: FaveFiveProps) => {
   return (
-    <Widget<WidgetData>
+    <TableWidget<TableWidgetData>
       title="Fave Five"
       rowKey="_id"
       stat={{
@@ -25,7 +25,7 @@ export const FaveFive = ({ summoner }: FaveFiveProps) => {
       cells={{
         icon: {
           header: '',
-          render: (value: WidgetData) => (
+          render: (value: TableWidgetData) => (
             <div style={style('flx')}>
               <Image
                 style={{

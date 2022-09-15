@@ -8,6 +8,12 @@ const s = createStyles({
   flx: {
     display: 'flex',
   },
+  flx_1: {
+    flex: 1,
+  },
+  flx_0: {
+    flex: 0,
+  },
   flx_r: {
     display: 'flex',
     flexDirection: 'row',

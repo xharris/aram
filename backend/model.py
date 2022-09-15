@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 from pydantic import BaseModel
 
 class _AutoName(Enum):
@@ -67,7 +68,7 @@ class Participant(BaseModel):
 class Info(BaseModel):
   gameDuration: int
   gameStartTimestamp: int 
-  gameEndTimestamp: int 
+  gameEndTimestamp: Optional[int] = None
   gameMode: GameMode
   gameType: GameType
   participants: list[Participant]

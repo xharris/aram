@@ -4,9 +4,12 @@ import './style.scss'
 import debugModule from 'debug'
 import { useSummoner } from './lib/summoner'
 import { style } from './lib/style'
-import { FaveFive } from './widgets/faveFive'
+import { FaveFive } from './widgets/FaveFive'
 import { Image } from './component/Image'
 import { summonerProfileIcon } from './lib/ddragon'
+import { Responsive as ResponsiveGridLayout } from 'react-grid-layout'
+import { MatchCount } from './widgets/MatchCount'
+import { Villians } from './widgets/Villians'
 
 localStorage.debug = process.env.REACT_APP_DEBUG
 
@@ -24,6 +27,12 @@ const App = () => {
           name="summonerName"
           placeholder="Summoner name"
           onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              debug('get %s', value)
+              setName(value)
+            }
+          }}
         />
         <button
           onClick={() => {
@@ -52,8 +61,12 @@ const App = () => {
             />
             <h2>{summoner.name}</h2>
           </div>
-          <div style={style('flx_in')}>
+          <div style={style('flx_in', { gap: 20 })}>
+            {/* <ResponsiveGridLayout width={1064}> */}
             <FaveFive summoner={summoner} />
+            <MatchCount summoner={summoner} />
+            <Villians summoner={summoner} />
+            {/* </ResponsiveGridLayout> */}
           </div>
         </>
       )}

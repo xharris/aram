@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from . import summoner, champions
+from . import summoner, champions, match
 
 app = FastAPI()
 origins = [
@@ -21,3 +21,4 @@ def read_root(request: Request):
 
 app.include_router(summoner.router, prefix='/api/v1')
 app.include_router(champions.router, prefix='/api/v1')
+app.include_router(match.router, prefix='/api/v1')

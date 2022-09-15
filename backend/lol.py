@@ -1,3 +1,4 @@
+from math import floor
 from fastapi import HTTPException
 import logging
 import os
@@ -25,14 +26,14 @@ def _call(url: str, params: dict = {}, method = 'get', region = 'americas', noCa
 
   # rate limiting: avoid making queries too fast
   now = datetime.now()
-  if last_call is not None:
-    diff = (now - last_call).total_seconds()
-    last_call = None
-    if diff > (1/RATE_LIMIT):
-      # going too fast. wait {diff} seconds
-      time.sleep(diff)
-  else:
-    last_call = datetime.now()
+  # if last_call is not None:
+  #   diff = (now - last_call).total_seconds()
+  #   last_call = None
+  #   if diff > (1/RATE_LIMIT):
+  #     # going too fast. wait {diff} seconds
+  #     time.sleep(diff)
+  # else:
+  #   last_call = datetime.now()
 
   r = requests.request(method, f'{Template(BASE_URL).substitute(region=region)}/{url}', params=params)
 
@@ -47,6 +48,12 @@ def _call(url: str, params: dict = {}, method = 'get', region = 'americas', noCa
     return _call(url, params, method, region, noCache)
 
   # rate limit exceeded
+  # if 'App-Rate-Limit' in r.headers: 
+    
+  #   print(f'Setting rate to {} (App)')
+  # if 'Method-Rate-Limit' in r.headers:
+
+  #   print(f'Setting rate to {} (Method)')
   if r.status_code == 429 and 'Retry-After' in r.headers:
     wait = int(r.headers['Retry-After'])
     print(f'Rate limit exceeded. Waiting {wait}s')
@@ -74,9 +81,9 @@ def _get(url: str, params: dict = {}):
 
 def _db_call(collection: str, query: Any, *args, **kwargs):
   doc = db[collection].find_one(query)
-  logging.info(' '.join(args), query)
+  logging.debug(' '.join(args), query)
   if not doc:
-    logging.info('not in db')
+    logging.debug('not in db')
     doc = _call(*args, **kwargs)
     db[collection].insert_one(doc)
     cache.save()
@@ -112,7 +119,15 @@ def arams(puuid: model.puuid, max = 300):
   ids = ids[:max]
   logging.info(f'retrieve {len(ids)} matches')
   # turn ids into match data
-  matches = [model.Match(**_db_call('matches', {'metadata.matchId': id}, f'lol/match/v5/matches/{id}')) for id in ids]
+  matches: list[model.Match] = []
+  for i, id in enumerate(ids):
+    if (floor(i / len(ids) * 100)) % 10 == 0:
+      logging.info(f"{floor(i / len(ids) * 100)}% done getting matches")
+    data = _db_call('matches', {'metadata.matchId': id}, f'lol/match/v5/matches/{id}')
+    try:
+      matches.append(model.Match(**data))
+    except Exception as e:
+      logging.error(f"match {id} sucks because {e}")
   cache.save()
   return [match for match in matches if match.info.gameMode == model.GameMode.ARAM][:max]
 
