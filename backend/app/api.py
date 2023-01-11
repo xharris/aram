@@ -5,7 +5,8 @@ from . import summoner, champions, match
 app = FastAPI()
 origins = [
   'http://localhost:3000',
-  'localhost:3000'
+  'localhost:3000',
+  '127.0.0.1'
 ]
 app.add_middleware(
   CORSMiddleware,
